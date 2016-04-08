@@ -512,6 +512,50 @@ int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
   return len;
 }
 
+// base64 encoder from Apple QuickTime source
+// https://opensource.apple.com/source/QuickTimeStreamingServer/QuickTimeStreamingServer-452/CommonUtilitiesLib/base64.c
+static const char basis_64[] =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+int json_emit_quoted_base64(char *s, int s_len, const char *str, int len) {
+  const char *begin = s, *end = s + s_len;
+
+#define EMIT(x)          \
+  do {                   \
+    if (s < end) *s = x; \
+    s++;                 \
+  } while (0)
+
+  EMIT('"');
+
+	int i;
+
+	for (i = 0; i < len - 2; i += 3) {
+		EMIT(basis_64[(str[i] >> 2) & 0x3F]);
+		EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
+		EMIT(basis_64[((str[i + 1] & 0xF) << 2) | ((int)(str[i + 2] & 0xC0) >> 6)]);
+		EMIT(basis_64[str[i + 2] & 0x3F]);
+	}
+	if (i < len) {
+		EMIT(basis_64[(str[i] >> 2) & 0x3F]);
+		if (i == (len - 1)) {
+			EMIT(basis_64[((str[i] & 0x3) << 4)]);
+			EMIT('=');
+		} else {
+			EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
+			EMIT(basis_64[((str[i + 1] & 0xF) << 2)]);
+		}
+		EMIT('=');
+	}
+
+  EMIT('"');
+  if (s < end) {
+    *s = '\0';
+  }
+
+  return s - begin;
+}
+
 int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
   const char *end = s + s_len, *str, *orig = s;
   size_t len;
@@ -556,6 +600,11 @@ int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
       case 'S':
         str = va_arg(ap, char *);
         s += json_emit_unquoted_str(s, end - s, str, strlen(str));
+        break;
+      case 'b':
+        str = va_arg(ap, char *);
+        len = va_arg(ap, size_t);
+        s += json_emit_quoted_base64(s, end - s, str, len);
         break;
       case 'T':
         s += json_emit_unquoted_str(s, end - s, "true", 4);
