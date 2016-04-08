@@ -528,25 +528,25 @@ int json_emit_quoted_base64(char *s, int s_len, const char *str, int len) {
 
   EMIT('"');
 
-	int i;
+  int i;
 
-	for (i = 0; i < len - 2; i += 3) {
-		EMIT(basis_64[(str[i] >> 2) & 0x3F]);
-		EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
-		EMIT(basis_64[((str[i + 1] & 0xF) << 2) | ((int)(str[i + 2] & 0xC0) >> 6)]);
-		EMIT(basis_64[str[i + 2] & 0x3F]);
-	}
-	if (i < len) {
-		EMIT(basis_64[(str[i] >> 2) & 0x3F]);
-		if (i == (len - 1)) {
-			EMIT(basis_64[((str[i] & 0x3) << 4)]);
-			EMIT('=');
-		} else {
-			EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
-			EMIT(basis_64[((str[i + 1] & 0xF) << 2)]);
-		}
-		EMIT('=');
-	}
+  for (i = 0; i < len - 2; i += 3) {
+    EMIT(basis_64[(str[i] >> 2) & 0x3F]);
+    EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
+    EMIT(basis_64[((str[i + 1] & 0xF) << 2) | ((int)(str[i + 2] & 0xC0) >> 6)]);
+    EMIT(basis_64[str[i + 2] & 0x3F]);
+  }
+  if (i < len) {
+    EMIT(basis_64[(str[i] >> 2) & 0x3F]);
+    if (i == (len - 1)) {
+      EMIT(basis_64[((str[i] & 0x3) << 4)]);
+      EMIT('=');
+    } else {
+      EMIT(basis_64[((str[i] & 0x3) << 4) | ((int)(str[i + 1] & 0xF0) >> 4)]);
+      EMIT(basis_64[((str[i + 1] & 0xF) << 2)]);
+    }
+    EMIT('=');
+  }
 
   EMIT('"');
   if (s < end) {
@@ -562,13 +562,14 @@ int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
 
   while (*fmt != '\0') {
     switch (*fmt) {
+      case ' ':
+        break;
       case '[':
       case ']':
       case '{':
       case '}':
       case ',':
       case ':':
-      case ' ':
       case '\r':
       case '\n':
       case '\t':
