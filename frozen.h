@@ -20,23 +20,39 @@
 #ifndef FROZEN_HEADER_INCLUDED
 #define FROZEN_HEADER_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #include <stdarg.h>
+#include <functional>
 
 typedef char (*frozen_fun_t)(void*);
+typedef void (*frozen_emit_fun_t)(void*, char);
 
-int json_emit_long(char *buf, int buf_len, long value);
-int json_emit_double(char *buf, int buf_len, double value);
-int json_emit_quoted_str(char *buf, int buf_len, const char *str, int len);
-int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len);
-int json_emit(char *buf, int buf_len, const char *fmt, ...);
-int json_emit_va(char *buf, int buf_len, const char *fmt, va_list);
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
+class JsonEmitter {
+public:
+	typedef std::function<void(char c)> PutCharHandler;
+
+	PutCharHandler putCharHandler;
+
+	JsonEmitter(const char* format, va_list inArg);
+  ~JsonEmitter();
+
+	int getSize();
+	int doEmit();
+
+private:
+  const char* format;
+  va_list arg;
+	int size;
+  int mode;
+
+  void process(va_list tmpList);
+	void emitChar(char c);
+
+	void json_emit_quoted_str(const char *str, int len);
+	void json_emit_quoted_base64(const char *str, int len);
+	void json_emit_quoted_base64_callback(frozen_fun_t fun, void* user, int len);
+	void json_emit_quoted_hex(const char *str, int len);
+};
 
 #endif /* FROZEN_HEADER_INCLUDED */
+
