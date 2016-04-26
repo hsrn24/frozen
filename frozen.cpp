@@ -134,7 +134,7 @@ void JsonEmitter::json_emit_quoted_base64_callback(frozen_fun_t fun, void* user,
 	EMIT('"');
 
 	int i;
-	char s1, s2, s3;
+	char s1 = 0, s2 = 0, s3 = 0;
 
 	for (i = 0; i < len - 2; i += 3) {
 		if (mode == 1) {
