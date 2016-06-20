@@ -34,20 +34,21 @@ public:
 	PutCharHandler putCharHandler;
 
 	JsonEmitter(const char* format, va_list inArg);
-  ~JsonEmitter();
+	~JsonEmitter();
 
 	int getSize();
 	int doEmit();
 
 private:
-  const char* format;
-  va_list arg;
+	const char* format;
+	va_list arg;
 	int size;
-  int mode;
+	int mode;
 
-  void process(va_list tmpList);
+	void process(va_list tmpList);
 	void emitChar(char c);
 
+	int json_emit_long(long int value);
 	void json_emit_quoted_str(const char *str, int len);
 	void json_emit_quoted_base64(const char *str, int len);
 	void json_emit_quoted_base64_callback(frozen_fun_t fun, void* user, int len);

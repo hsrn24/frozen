@@ -25,12 +25,16 @@
 #include <stdarg.h>
 #include "frozen.h"
 
-// int json_emit_long(char *buf, int buf_len, long int value) {
-// char tmp[20];
-// int n = snprintf(tmp, sizeof(tmp), "%ld", value);
-// strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
-// return n;
-// }
+int JsonEmitter::json_emit_long(long int value)
+{
+	char tmp[20];
+	int n = snprintf(tmp, sizeof(tmp), "%ld", value);
+	for (int i = 0; i < n; i++) {
+		emitChar(tmp[i]);
+	}
+	// strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
+	return n;
+}
 
 // int json_emit_double(char *buf, int buf_len, double value) {
 // char tmp[20];
@@ -224,9 +228,10 @@ void JsonEmitter::process(va_list tmpList)
 		case '\t':
 			EMIT(*fmt);
 			break;
-			// case 'i':
-			// s += json_emit_long(s, end - s, va_arg(ap, long) );
-			// break;
+		case 'i':
+		case 'd':
+			json_emit_long(va_arg(tmpList, long));
+			break;
 			// case 'f':
 			// s += json_emit_double(s, end - s, va_arg(ap, double) );
 			break;
